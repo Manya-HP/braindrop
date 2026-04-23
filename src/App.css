@@ -1,0 +1,107 @@
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background: #f4f6fb;
+}
+
+.app {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+/* SEARCH */
+.search {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: #eef1f7;
+  margin-bottom: 15px;
+}
+
+/* CATEGORY */
+.categories {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.categories button {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  background: #e0e0e0;
+  cursor: pointer;
+}
+
+.categories .active {
+  background: #000;
+  color: #fff;
+}
+
+/* INPUT */
+.inputBox {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.inputBox input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: #eef1f7;
+}
+
+.inputBox button {
+  border-radius: 50%;
+  background: black;
+  color: white;
+  border: none;
+  width: 45px;
+  height: 45px;
+  font-size: 20px;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* CARD */
+.card {
+  padding: 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.card small {
+  color: #777;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.actions button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  color: #999;
+}
