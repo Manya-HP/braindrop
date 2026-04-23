@@ -1,159 +1,109 @@
-import "./App.css";
-import { useEffect, useState } from "react";
-import { db } from "./firebase";
-import {
-  collection,
-  addDoc,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  updateDoc,
-  serverTimestamp
-} from "firebase/firestore";
+import { useState } from "react";
+import { useNotes } from "./hooks/useNotes";
+import NoteCard from "./components/NoteCard/NoteCard";
+import Header from "./components/Header/Header";
+import CategoryTabs from "./components/CategoryTabs/CategoryTabs";
 
-type Note = {
-  id: string;
-  content: string;
-  category: string;
-  createdAt?: any;
-};
+import "./styles/global.css";
+import type { Category } from "./types/note";
+import CalendarStrip from "./components/calendarScript/CalendarStrip";
 
-const categories = ["All", "Work", "Personal", "Ideas"];
+export default function App() {
+  const { notes, filter, setFilter, addNote, deleteNote, togglePin } =
+    useNotes();
 
-function App() {
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [input, setInput] = useState("");
-  const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newContent, setNewContent] = useState("");
+  const [newCategory, setNewCategory] =
+    useState<Exclude<Category, "All">>("Shopping list");
 
-  // 🔄 REALTIME FETCH (removed orderBy to avoid crash)
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "notes"), (snapshot) => {
-      const data: Note[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Note, "id">)
-      }));
-
-      // sort manually (safe)
-      data.sort((a, b) => {
-        return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
-      });
-
-      setNotes(data);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // ➕ ADD NOTE
-  const addNote = async () => {
-    if (!input.trim()) return;
-
-    try {
-      await addDoc(collection(db, "notes"), {
-        content: input,
-        category: "Work",
-        createdAt: serverTimestamp()
-      });
-
-      setInput("");
-    } catch (err) {
-      console.error("Error adding:", err);
+  const handleAddNote = async () => {
+    if (newTitle.trim() && newContent.trim()) {
+      await addNote(newTitle, newContent, newCategory);
+      setNewTitle("");
+      setNewContent("");
+      setNewCategory("Shopping list");
+      setIsModalOpen(false);
     }
   };
 
-  // ❌ DELETE
-  const deleteNote = async (id: string) => {
-    await deleteDoc(doc(db, "notes", id));
-  };
-
-  // ✏️ EDIT
-  const editNote = async (id: string, oldText: string) => {
-    const newText = prompt("Edit note:", oldText);
-    if (!newText) return;
-
-    await updateDoc(doc(db, "notes", id), {
-      content: newText
-    });
-  };
-
-  // 🔍 FILTER
-  const filteredNotes = notes.filter((note) => {
-    const matchSearch = note.content
-      .toLowerCase()
-      .includes(search.toLowerCase());
-
-    const matchCategory =
-      activeCategory === "All" || note.category === activeCategory;
-
-    return matchSearch && matchCategory;
-  });
-
   return (
-    <div className="app">
-      <h1>🧠 BrainDrop</h1>
-
-      {/* SEARCH */}
-      <input
-        className="search"
-        placeholder="Search notes..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
+    <div className="container">
+      <Header
+        search={filter.search}
+        setSearch={(value) => setFilter({ ...filter, search: value })}
       />
 
-      {/* CATEGORY */}
-      <div className="categories">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            className={cat === activeCategory ? "active" : ""}
-            onClick={() => setActiveCategory(cat)}
-          >
-            {cat}
-          </button>
+      <CalendarStrip
+        selectedDate={filter.selectedDate}
+        setSelectedDate={(date) => setFilter({ ...filter, selectedDate: date })}
+      />
+
+      <CategoryTabs
+        active={filter.category}
+        setActive={(category) => setFilter({ ...filter, category: category })}
+      />
+
+      <div className="grid">
+        {notes.length === 0 && (
+          <p className="empty">
+            {filter.search
+              ? "No notes match your search"
+              : "No notes for this day"}
+          </p>
+        )}
+
+        {notes.map((note) => (
+          <NoteCard
+            key={note.id}
+            note={note}
+            onDelete={deleteNote}
+            onTogglePin={togglePin}
+          />
         ))}
       </div>
 
-      {/* INPUT */}
-      <div className="inputBox">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Drop your thoughts..."
-        />
-        <button onClick={addNote}>+</button>
-      </div>
+      <button className="fab" onClick={() => setIsModalOpen(true)}>
+        +
+      </button>
 
-      {/* EMPTY STATE */}
-      {filteredNotes.length === 0 && (
-        <p className="empty">No notes found</p>
-      )}
-
-      {/* GRID */}
-      <div className="grid">
-        {filteredNotes.map((note) => (
-          <div className="card" key={note.id}>
-            <p>{note.content}</p>
-
-            <small>
-              {note.createdAt
-                ? new Date(note.createdAt.seconds * 1000).toLocaleString()
-                : "Saving..."}
-            </small>
-
-            <div className="actions">
-              <button onClick={() => editNote(note.id, note.content)}>
-                ✏️
-              </button>
-              <button onClick={() => deleteNote(note.id)}>
-                ❌
-              </button>
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Add New Note</h2>
+            <input
+              type="text"
+              placeholder="Title"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              autoFocus
+            />
+            <textarea
+              placeholder="Content (use new lines for lists)"
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
+            />
+            <select
+              value={newCategory}
+              onChange={(e) =>
+                setNewCategory(e.target.value as Exclude<Category, "All">)
+              }
+            >
+              <option value="Shopping list">🛒 Shopping list</option>
+              <option value="Lecture notes">📚 Lecture notes</option>
+              <option value="Grocery list">🥬 Grocery list</option>
+              <option value="Work">💼 Work</option>
+              <option value="Personal">👤 Personal</option>
+              <option value="Ideas">💡 Ideas</option>
+            </select>
+            <div className="modal-actions">
+              <button onClick={() => setIsModalOpen(false)}>Cancel</button>
+              <button onClick={handleAddNote}>Add Note</button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
-
-export default App;

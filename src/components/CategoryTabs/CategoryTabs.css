@@ -1,0 +1,44 @@
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 20px 0;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.category-tabs::-webkit-scrollbar {
+  height: 3px;
+}
+
+.category-tabs::-webkit-scrollbar-track {
+  background: #eef1f7;
+  border-radius: 3px;
+}
+
+.category-tabs::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.tab {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  background: #eef1f7;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  color: #444;
+}
+
+.tab.active {
+  background: #111;
+  color: white;
+}
+
+.tab:hover:not(.active) {
+  background: #e2e6ec;
+}

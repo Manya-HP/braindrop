@@ -7,7 +7,7 @@ const firebaseConfig = {
   projectId: "braindrop-189fa",
   storageBucket: "braindrop-189fa.firebasestorage.app",
   messagingSenderId: "556094776798",
-  appId: "1:556094776798:web:4a910f8a43e6d2a053694f"
+  appId: "1:556094776798:web:4a910f8a43e6d2a053694f",
 };
 
 const app = initializeApp(firebaseConfig);
